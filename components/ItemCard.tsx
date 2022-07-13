@@ -1,17 +1,18 @@
 import React from "react";
-import {  StyleSheet, Text, Pressable, Image, View } from 'react-native';
+import { StyleSheet, Text, Pressable, Image, View } from 'react-native';
 import { Item } from '../types/Item'
 
 interface ItemCardProps {
-  item: Item
+  item: Item;
+  toggleModal: () => void;
 }
 
-const ItemCard = ({item}: ItemCardProps) => {
+const ItemCard = ({item, toggleModal}: ItemCardProps) => {
 
   return (
     <View>
       <Pressable 
-      onPress={()=>{}}
+      onPress={toggleModal}
       style={({ pressed }) => [
         {
           borderColor: pressed
@@ -45,11 +46,10 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   image: {
-    width: 80,
+    width: '80%',
     height: 80,
   },
   title: {
-    // fontWeight: 'bold',
     marginTop:15,
     fontSize: 12,
     textAlign: 'center',

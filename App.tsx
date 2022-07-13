@@ -1,19 +1,26 @@
 import React from 'react';
 import { useState, useEffect } from 'react';
-import { FlatList, StatusBar, StyleSheet, Text, View } from 'react-native';
-// import MenuService from './api/menu';
-import Logo from "./assets/logo.svg";
-import ItemCard from './components/ItemCard';
+import { FlatList, StyleSheet, View } from 'react-native';
+import { emptyItem, SelectedItemContext } from './AppContext';
+import Header from './components/Header';
+import ItemList from './components/ItemList';
+import ModalItem from './components/ModalItem';
+import { Item } from './types/Item';
 
+interface MenuProps {
+  name: string;
+  items: Item[];
+}
 
 export default function App() {
-
   const [menu, setMenu] = useState([]);
+  const [modalVisible, setModalVisible] = useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = useState<Item>(emptyItem);
 
   const getMenuList = async () => {
     try {
       const menuList = require('./api/menu.json');
-      setMenu(menuList.menus);
+      setMenu(menuList.menus.sort((a: { name: string; },b: { name: string; }) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0)));
     } catch ( error ) {
       console.error(error);
     }
@@ -23,33 +30,26 @@ export default function App() {
       getMenuList();
   }, [])
 
-  const renderList = ({ item }) => (
-    <View>
-      <Text style={styles.title}>{item.name}</Text>
-      <FlatList
-        horizontal={true}
-        data={item.items.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))}
-        renderItem={ItemCard}
-        keyExtractor={item => item.name}
-        extraData={item.name}
-        ItemSeparatorComponent={() => <View style={{width:15}}></View>}
-        ListHeaderComponent={() => <View style={{width:15}}></View>}
-        ListFooterComponent={() => <View style={{width:15}}></View>}
-
-      />
-  </View>
-  );
+  const toggleModal = (item: Item) => {
+    setSelectedItem(item);
+    setModalVisible(!modalVisible);
+  }
 
   return (
+    <SelectedItemContext.Provider value={selectedItem}>
       <View style={styles.container}>
-        <Logo width={100} height={100} />
+        <Header />
+        
         <FlatList
-          data={menu.sort((a,b) => (a.name > b.name) ? 1 : ((b.name > a.name) ? -1 : 0))}
-          renderItem={renderList}
+          data={menu}
+          renderItem={({ item } : {item: MenuProps} ) => (
+            <ItemList itemList={item.items} name={item.name} toggleModal={toggleModal}/>
+          )}
           keyExtractor={item => item.name}
         />
-        <StatusBar style="auto" />
+        <ModalItem modalVisible={modalVisible} closeModal={() => setModalVisible(false)}/>
       </View>
+    </SelectedItemContext.Provider>
   );
 }
 
